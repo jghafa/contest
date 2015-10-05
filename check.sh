@@ -1,8 +1,33 @@
-#!/bin/bash
+#!/bin/bash 
+#-xv
+#trap read debug
+
+#Housekeeping
 # make array empty when no matches
 shopt -s nullglob
+
+
+# Make sure answers exist
+if [ -d "answers" ] ; then
+  echo answers exist
+  answers=(./answers/[0-9][0-9]*.txt)
+  echo number of answer files ${#answers[@]} 
+  if [ ${#answers[@]} -eq 0 ]; then
+    echo No answers were detected in the answers directory
+    exit
+  fi  
+else
+echo if false
+  mkdir answers
+  echo Directory 'answers' created, please fill with answer files.
+  echo File name format: 00.txt for the answer to question 0
+  exit
+fi
+
 #echo
 #echo start
+exit
+
 #echo parameters $# $1 $2 $3
 #echo files
 #echo $1*.txt
