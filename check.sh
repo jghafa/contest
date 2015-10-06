@@ -1,4 +1,6 @@
 #!/bin/bash 
+#Parameter 1 is the directory for solution files
+
 #-xv
 #trap read debug
 
@@ -9,7 +11,7 @@ shopt -s nullglob
 
 # Make sure answers exist
 if [ -d "answers" ] ; then
-  echo answers exist
+#  echo answers exist
   answers=(./answers/[0-9][0-9]*.txt)
   echo number of answer files ${#answers[@]} 
   if [ ${#answers[@]} -eq 0 ]; then
@@ -25,23 +27,23 @@ echo if false
 fi
 
 #echo
-#echo start
-exit
-
 #echo parameters $# $1 $2 $3
 #echo files
 #echo $1*.txt
 
+# Read the files names from the specified directory
 array=($1*.txt)
 echo
-echo number of elements ${#array[@]} 
-#echo elements
+echo number of files found ${#array[@]} 
+echo files found
 echo "${array[@]}" # echo elements
 echo 
 
+#Check each file
 for i in "${array[@]}"
 do
-  diff $i ./answers/0.txt > /dev/null
+# next feature to add - get first char from file name, use to get answer file
+  diff $i ./answers/00.txt > /dev/null
   if [ $? -ne 0 ]; then    # did it match
     echo $i did not match          # nope
   else
