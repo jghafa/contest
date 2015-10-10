@@ -20,9 +20,10 @@ then
     echo 'No answers were detected in the answers directory'
     exit
   fi  
-else
+else   # dir does not exist,so make it and create the example file
   echo 'answers exist' 
   mkdir answers
+  echo 42 > answers/00.txt
   echo 'Directory answers created, please fill with answer files.'
   echo 'File name format: 00.txt for the answer to question 0'
   exit
