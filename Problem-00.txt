@@ -1,0 +1,17 @@
+00 - So you want to enter a programming contest?
+
+This is an example question for the TechFest programming contest.  It's intended to help you verify the program output and test it against the same software that will be used to judge the contest.
+If you don't understand the sample answer or the question, well, Google is your friend.
+
+No input is required.
+
+Write a program that computes the "Answer to The Ultimate Question of Life, the Universe, and Everything".  
+
+Write your answers in a file named 00-TeamName.txt, one answer per line.
+Name your source code 00-TeamName.ext (with ext set for your language) and turn it in.
+
+Example A:
+
+
+Answer A:
+42
