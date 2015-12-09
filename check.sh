@@ -8,6 +8,11 @@
 # make array empty when no matches
 shopt -s nullglob
 
+# Note the time
+now=$(date +"%T")
+
+#log file name
+lname=$(date +"%m-%d-%ycontest.log")
 
 # Make sure answers exist
 if [ -d "answers" ]; 
@@ -46,14 +51,12 @@ echo ${#array[@]} 'Files submitted for review'
 for i in "${array[@]}"
 do
 # get first chars from file name, use to get answer file
-  echo 
   j="${i:${#1}:2}"   # Extract problem number, skip param 1 length, then get 2
-echo $j
   diff -w $i ./answers/${j}.txt > /dev/null
   if [ $? -ne 0 ]; then    # did it match
-    echo $i 'did not match'          # nope
+    echo $i 'did not match'| tee -a $lname
   else
-    echo $i 'Matched'
+    echo $i 'Matched' $now | tee -a $lname
   fi
 done
 #echo direct ${array[0]}
