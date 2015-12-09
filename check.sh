@@ -12,7 +12,7 @@ shopt -s nullglob
 now=$(date +"%T")
 
 #log file name
-lname=$(date +"%m-%d-%ycontest.log")
+lname=$(date +"contest-%m-%d-%y.log")
 
 # Make sure answers exist
 if [ -d "answers" ]; 
