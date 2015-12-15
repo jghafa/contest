@@ -12,6 +12,8 @@ Contest problem output will be given to the judges on flash drives.  Judges will
 
 Contest problem descriptions, problem inputs, and problem output are all text files.
 
+Since problems are submitted via text files, and since any system may be used, your submitted files may use lines separated by Windows conventions (CR LF, 0x0D 0xoA), Unix conventions (LF, 0xoA), or Mac conventions (CR, 0x0D).
+
 The contest problem solutions will be judged by a UNIX Bash script that compares the submitted output file to a reference output file.  The standard UNIX command "DIFF -w" will do the actual comparison, so code your programs accordingly.
 
 Sample problems and the contest judging script are available online at https://github.com/jghafa/contest
