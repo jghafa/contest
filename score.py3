@@ -16,9 +16,8 @@ answerFiles  = config['Paths']['AnswerFiles']
 # Get the list of Bonus Points
 points = [int(i) if i.isdigit() else i for i in config['Bonus']['Points'].split(',')]
 problems = config['Bonus']['Problems'].split(',')
+# pair the problems and points into a tuple, use it later for bonus db
 BonusPoints = list(zip(problems, points))
-
-print (BonusPoints)
 
 conn = sqlite3.connect('score.sqlite')
 c = conn.cursor()
@@ -45,9 +44,8 @@ c.execute("""
 
 c.executemany('insert into bonus values (?,?)', BonusPoints )
 
+#setup is complete
 conn.commit()
-
-quit()
 
 
 # Read in all the problems
@@ -72,14 +70,48 @@ for file in os.listdir(problemFiles):
 
         # Return code of zero means the answer is correct
         if returncode == 0:
-            c.execute("SELECT * FROM score WHERE problem = ? and team = upper(?)",
+            # 
+            c.execute("SELECT solved FROM score WHERE problem = ? and team = upper(?)",
                     (problem, team ))
             data = c.fetchone()
             if data is None:
-                print (problem, team, solved)
-                c.execute("insert into score values (?, upper(?), ?, 1)", 
+                #print (problem, team, solved)
+                c.execute("insert into score values (?, upper(?), ?, 0)", 
                     (problem, team, solved))
-                conn.commit()
+            else:
+                if str(solved) < data[0]:
+                    # found a better time for this team and problem
+                    c.execute("""update score 
+                                set solved = ? 
+                                WHERE problem = ? and team = upper(?)""",
+                        (solved, problem, team))
+            conn.commit()
+
+# Read the database and set the scores
+last = ''
+scorelist=[]
+for row in c.execute("""SELECT  score.problem, score.team, score.solved, 
+                                bonus.bonus, score.score 
+                        FROM score, bonus 
+                        WHERE score.problem = bonus.problem 
+                        ORDER by score.problem, score.solved"""):
+    prob = row[0]
+    if last != prob:
+        bonus = 3
+        last = prob
+    else:
+        if bonus > 1 :
+            bonus -= 1
+    #print (bonus, row)
+    # this list will update the table in a couple lines
+    scorelist.append((bonus,row[0],row[1]))
+
+print(scorelist)
+
+c.executemany("""UPDATE score 
+                 SET score = ? 
+                 WHERE problem = ? and team = upper(?)""", 
+                 scorelist )
 
 #close SQLite3
 conn.commit()
