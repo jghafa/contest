@@ -13,6 +13,8 @@ config.read('score.ini')
 problemFiles = config['Paths']['ProblemFiles']
 # directory of reference answers
 answerFiles  = config['Paths']['AnswerFiles']
+# filename of HTML output
+HTML         = config['Paths']['HTMLOutput']
 # Get the list of Bonus Points
 points = [int(i) if i.isdigit() else i for i in config['Bonus']['Points'].split(',')]
 problems = config['Bonus']['Problems'].split(',')
@@ -106,12 +108,43 @@ for row in c.execute("""SELECT  score.problem, score.team, score.solved,
     # this list will update the table in a couple lines
     scorelist.append((bonus,row[0],row[1]))
 
-print(scorelist)
-
 c.executemany("""UPDATE score 
                  SET score = ? 
                  WHERE problem = ? and team = upper(?)""", 
                  scorelist )
+
+print (HTML)
+f = open(HTML, 'w')
+
+f.write ("""<html>
+              <head>
+                <title>Contest Scores</title>
+                <meta http-equiv="refresh" content="20">
+              </head>
+              <body>
+              <h2>Contest Scores</h2>
+                <table>
+                    <tr><td><b>Team</td><td>Score</td><td>Solved</td></b></tr>
+         """)
+
+
+
+for row in c.execute("""SELECT  team, sum(score) as TeamScore,count(team) as Completed
+                        FROM score
+                        GROUP by team
+                        ORDER by TeamScore desc"""):
+    f.write ('<tr><td>' + row[0] + '</td><td>' + 
+                    str(row[1]) + '</td><td>' + 
+                    str(row[2]) + '</td></tr>')
+
+f.write ("""
+            </tr>
+            </table>
+          </body>
+        </html>
+""")
+
+f.close()
 
 #close SQLite3
 conn.commit()
