@@ -1,4 +1,14 @@
 #!/usr/bin/python3
+"""
+score.py3 scores a programming contest.
+Features:
+Grades team submittals by comparing them to a reference answer, using the diff utility.
+Assigns points to an entry, based on matching the reference and the time stamp of the entry.
+Stores the sucessful entries in an SQLite3 database.
+Writes results to an HTML file that auto refreshes.
+
+Parameters to score are stored in score.ini.
+"""
 
 import configparser
 import os
@@ -15,17 +25,21 @@ problemFiles = config['Paths']['ProblemFiles']
 answerFiles  = config['Paths']['AnswerFiles']
 # filename of HTML output
 HTML         = config['Paths']['HTMLOutput']
-# Get the list of Bonus Points
+
+# Get the list of Bonus Points per problem
+# convert the scores into a list of integers
 points = [int(i) if i.isdigit() else i for i in config['Bonus']['Points'].split(',')]
+# put the problem names into a list
 problems = config['Bonus']['Problems'].split(',')
-# pair the problems and points into a tuple, use it later for bonus db
+# pair the problems and points into a tuple, use it later for initializing bonus db
 BonusPoints = list(zip(problems, points))
 
-conn = sqlite3.connect('score.sqlite')
-c = conn.cursor()
+#Define the database. The database is completely rebuilt every program run.
+SQLconn = sqlite3.connect('score.sqlite')
+SQL = SQLconn.cursor()
 
-c.execute("""drop table if exists score""")
-c.execute("""
+SQL.execute("""drop table if exists score""")
+SQL.execute("""
         create table score (
             problem text,
             team    text,
@@ -33,21 +47,21 @@ c.execute("""
             score   integer);
           """)
 
-c.execute("""drop table if exists bonus""")
-c.execute("""
+SQL.execute("""drop table if exists bonus""")
+SQL.execute("""
         create table bonus (
             problem text,
             bonus   integer);
           """)
 
-c.execute("""
+SQL.execute("""
         CREATE INDEX IF NOT EXISTS scoreindex ON score(problem ASC, solved ASC);
           """)
 
-c.executemany('insert into bonus values (?,?)', BonusPoints )
+SQL.executemany('insert into bonus values (?,?)', BonusPoints )
 
 #setup is complete
-conn.commit()
+SQLconn.commit()
 
 
 # Read in all the problems
@@ -73,30 +87,32 @@ for file in os.listdir(problemFiles):
         # Return code of zero means the answer is correct
         if returncode == 0:
             # 
-            c.execute("SELECT solved FROM score WHERE problem = ? and team = upper(?)",
+            SQL.execute("""SELECT solved 
+                           FROM score 
+                           WHERE problem = ? and team = upper(?)""",
                     (problem, team ))
-            data = c.fetchone()
+            data = SQL.fetchone()
             if data is None:
                 #print (problem, team, solved)
-                c.execute("insert into score values (?, upper(?), ?, 0)", 
+                SQL.execute("INSERT into score values (?, upper(?), ?, 0)", 
                     (problem, team, solved))
             else:
                 if str(solved) < data[0]:
                     # found a better time for this team and problem
-                    c.execute("""update score 
-                                set solved = ? 
-                                WHERE problem = ? and team = upper(?)""",
+                    SQL.execute("""update score 
+                                  set solved = ? 
+                                  WHERE problem = ? and team = upper(?)""",
                         (solved, problem, team))
-            conn.commit()
+            SQLconn.commit()
 
 # Read the database and set the scores
 last = ''
 scorelist=[]
-for row in c.execute("""SELECT  score.problem, score.team, score.solved, 
-                                bonus.bonus, score.score 
-                        FROM score, bonus 
-                        WHERE score.problem = bonus.problem 
-                        ORDER by score.problem, score.solved"""):
+for row in SQL.execute("""SELECT  score.problem, score.team, score.solved, 
+                                  bonus.bonus, score.score 
+                          FROM score, bonus 
+                          WHERE score.problem = bonus.problem 
+                          ORDER by score.problem, score.solved"""):
     prob = row[0]
     if last != prob:
         bonus = 3
@@ -104,48 +120,54 @@ for row in c.execute("""SELECT  score.problem, score.team, score.solved,
     else:
         if bonus > 1 :
             bonus -= 1
-    #print (bonus, row)
-    # this list will update the table in a couple lines
+    # SQLite does not like two cursors active at one time.
+    # So save the data in scorelist, and update when this loop ends
+    # scorelist contains the bonus, the problem name, and the team name
     scorelist.append((bonus,row[0],row[1]))
 
-c.executemany("""UPDATE score 
-                 SET score = ? 
-                 WHERE problem = ? and team = upper(?)""", 
+#update the scores with the bonuses saved in scorelist
+SQL.executemany("""UPDATE score 
+                   SET score = ? 
+                   WHERE problem = ? and team = upper(?)""", 
                  scorelist )
 
-print (HTML)
+print (HTML) #temp debugging - html file name
 f = open(HTML, 'w')
 
+# Initial HTML headers
 f.write ("""<html>
               <head>
                 <title>Contest Scores</title>
                 <meta http-equiv="refresh" content="20">
               </head>
               <body>
+        """)
+# Team score table
+f.write ("""        
               <h2>Contest Scores</h2>
                 <table>
                     <tr><td><b>Team</td><td>Score</td><td>Solved</td></b></tr>
          """)
 
-
-
-for row in c.execute("""SELECT  team, sum(score) as TeamScore,count(team) as Completed
-                        FROM score
-                        GROUP by team
-                        ORDER by TeamScore desc"""):
-    f.write ('<tr><td>' + row[0] + '</td><td>' + 
-                    str(row[1]) + '</td><td>' + 
-                    str(row[2]) + '</td></tr>')
-
+for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,count(team) as Completed
+                          FROM score
+                          GROUP by team
+                          ORDER by TeamScore desc"""):
+    f.write('<tr><td>'  +     row[0]  + 
+            '</td><td>' + str(row[1]) + 
+            '</td><td>' + str(row[2]) + 
+            '</td></tr>')
+#end the score table
 f.write ("""
             </tr>
-            </table>
+            </table>""")
+# end the html body
+f.write ("""
           </body>
-        </html>
-""")
+        </html>""")
 
 f.close()
 
 #close SQLite3
-conn.commit()
-conn.close()
+SQLconn.commit()
+SQLconn.close()
