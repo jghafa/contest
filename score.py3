@@ -13,7 +13,7 @@ Parameters to score are stored in score.ini.
 import configparser
 import os
 import subprocess
-import datetime
+from datetime import datetime
 import sqlite3
 
 config = configparser.ConfigParser()
@@ -25,6 +25,7 @@ problemFiles = config['Paths']['ProblemFiles']
 answerFiles  = config['Paths']['AnswerFiles']
 # filename of HTML output
 HTML         = config['Paths']['HTMLOutput']
+css          = config['Paths']['cssOutput']
 
 # Get the list of Bonus Points per problem
 # convert the scores into a list of integers
@@ -71,7 +72,13 @@ for file in os.listdir(problemFiles):
         f = file.split('-')
         problem = f[0]
         team    = f[1].split('.')[0]
-        solved  = datetime.datetime.fromtimestamp(os.path.getmtime(problemFiles+file))
+        #solved  = datetime.datetime.fromtimestamp(os.path.getmtime(problemFiles+file))
+        solved  = os.path.getmtime(problemFiles+file)
+
+        #print (
+        #datetime.datetime.fromtimestamp(os.path.getmtime(problemFiles+file)),
+        #os.path.getmtime(problemFiles+file)
+        #)
 
         returncode = 0
         # Check for correct output
@@ -131,40 +138,70 @@ SQL.executemany("""UPDATE score
                    WHERE problem = ? and team = upper(?)""", 
                  scorelist )
 
-print (HTML) #temp debugging - html file name
+#print (HTML) #temp debugging - html file name
 f = open(HTML, 'w')
 
 # Initial HTML headers
-f.write ("""<html>
+f.write ('''<html>
               <head>
                 <title>Contest Scores</title>
                 <meta http-equiv="refresh" content="20">
+                <link rel="stylesheet" href="''' + css + '''">
               </head>
-              <body>
-        """)
+              <body><div class="bottom">
+        ''')
 # Team score table
-f.write ("""        
-              <h2>Contest Scores</h2>
-                <table>
-                    <tr><td><b>Team</td><td>Score</td><td>Solved</td></b></tr>
+f.write ("""  <div class="col"><table><caption>Scores</caption>
+              <tr><td>Team</td><td>Score</td><td>Solved</td></tr>
          """)
 
 for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,count(team) as Completed
                           FROM score
                           GROUP by team
                           ORDER by TeamScore desc"""):
-    f.write('<tr><td>'  +     row[0]  + 
-            '</td><td>' + str(row[1]) + 
-            '</td><td>' + str(row[2]) + 
+    f.write('<tr><td>'                 +     row[0]  + 
+            '</td><td align="center">' + str(row[1]) + 
+            '</td><td align="center">' + str(row[2]) + 
             '</td></tr>')
 #end the score table
-f.write ("""
-            </tr>
-            </table>""")
+f.write ("""</table></div>""")
+
+# Problems solved table
+f.write ("""  <div class="col"><table><caption>Problems Solved</caption>
+              <tr><td>Problem</td><td>Solved Count</td></tr>
+         """)
+
+for row in SQL.execute("""SELECT problem, count(problem) as countprob 
+                          FROM score
+                          GROUP by problem
+                          ORDER by problem"""):
+
+    f.write('</td><td align="center">' +     row[0]  + 
+            '</td><td align="center">' + str(row[1]) + 
+            '</td></tr>')
+#end the problems solved table
+f.write ("""</table></div>""")
+
+# Problems solved table
+f.write ("""  <div class="col"><table><caption>All Problems Solved</caption>
+              <tr><td>Problem</td><td>Team</td><td>Time</td><td>Score</td></tr>
+         """)
+
+for row in SQL.execute("""SELECT  problem, team, solved, score
+                          FROM score
+                          ORDER by solved asc"""):
+    f.write('</td><td align="center">'+     row[0]  + 
+            '</td><td>'               + str(row[1]) + 
+            '</td><td align="center">'+ 
+             datetime.fromtimestamp(float(row[2])).strftime('%Y-%m-%d %H:%M:%S') +
+            '</td><td align="center">'+ str(row[3]) + 
+            '</td></tr>')
+#end the problems solved table
+f.write ("""</table></div>""")
+
+
 # end the html body
-f.write ("""
-          </body>
-        </html>""")
+f.write ("""</div></body></html>""")
 
 f.close()
 
