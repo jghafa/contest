@@ -151,7 +151,7 @@ f.write ('''<html>
               <body><div class="bottom">
         ''')
 # Team score table
-f.write ("""  <div class="col"><table><caption>Scores</caption>
+f.write ("""  <div class="col"><table><caption>Team Scores</caption>
               <tr><td>Team</td><td>Score</td><td>Solved</td></tr>
          """)
 
@@ -184,7 +184,7 @@ f.write ("""</table></div>""")
 
 # Problems solved table
 f.write ("""  <div class="col"><table><caption>All Problems Solved</caption>
-              <tr><td>Problem</td><td>Team</td><td>Time</td><td>Score</td></tr>
+              <tr><td>Problem</td><td>Team</td><td>Time&nbsp;Submitted</td><td>Score</td></tr>
          """)
 
 for row in SQL.execute("""SELECT  problem, team, solved, score
@@ -192,8 +192,8 @@ for row in SQL.execute("""SELECT  problem, team, solved, score
                           ORDER by solved asc"""):
     f.write('</td><td align="center">'+     row[0]  + 
             '</td><td>'               + str(row[1]) + 
-            '</td><td align="center">'+ 
-             datetime.fromtimestamp(float(row[2])).strftime('%Y-%m-%d %H:%M:%S') +
+            '</td><td align="left";style="white-space:nowrap;">'+ 
+             datetime.fromtimestamp(float(row[2])).strftime('%m-%d&nbsp;%H:%M:%S') +
             '</td><td align="center">'+ str(row[3]) + 
             '</td></tr>')
 #end the problems solved table
@@ -202,6 +202,89 @@ f.write ("""</table></div>""")
 
 # end the html body
 f.write ("""</div></body></html>""")
+
+f.close()
+
+f = open(css, 'w')
+
+f.write ("""
+div.bottom {
+    width: 90%;
+    margin-left: none;
+    margin-right: auto;
+    margin-top: none;
+    margin-bottom: none;
+}
+
+div.col {
+    float: left;
+    width: 33% ;
+}
+
+body {
+  font: 100% "Arial", sans-serif;
+  color: #333;
+  background: #F3F5F7;
+}
+
+table {
+  font: 100% "Arial", sans-serif;
+  border-width: 1px 1px 1px 1px;
+  padding: 0;
+  margin: 0;
+  border-collapse: collapse;
+  color: #333;
+  background: #F3F5F7;
+}
+
+table caption {
+  padding-bottom: 5px;
+  font: 125% "Arial", sans-serif;
+}
+
+table thead th {
+  background: #3A4856;
+  padding: 1px 4px;
+  color: #fff;
+  text-align: left;
+  font-weight: normal;
+}
+
+table tbody, table thead {
+  border-left:  1px solid #EAECEE;
+  border-right: 1px solid #EAECEE;
+}
+
+table tbody {
+  border-bottom: 1px solid #EAECEE;
+}
+
+table tbody td, table tbody th {
+    border-width: 2px 2px 2px 2px;
+    border-style: groove groove groove groove ;
+  padding: 2px 4px 2px 5px;
+ }
+
+table tbody tr {
+  background: #F3F5F7;
+}
+
+table tbody tr.odd {
+  background: #F0F2F4;
+}
+
+table tbody  tr:hover {
+  background: #EAECEE;
+  color: #111;
+}
+
+table tfoot td, table tfoot th, table tfoot tr {
+  font: 120%  "Arial", sans-serif;
+  text-transform: uppercase;
+  background: #fff;
+  padding: 5px;
+}
+""")
 
 f.close()
 
