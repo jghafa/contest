@@ -14,7 +14,7 @@ Contest problem descriptions, problem inputs, and problem output are all text fi
 
 Since problems are submitted via text files, and since any system may be used, your submitted files may use lines separated by Windows conventions (CR LF, 0x0D 0xoA), Unix conventions (LF, 0xoA), or Mac conventions (CR, 0x0D).
 
-The contest problem solutions will be judged by a UNIX Bash script that compares the submitted output file to a reference output file.  The standard UNIX command "DIFF -w" will do the actual comparison, so code your programs accordingly.
+The contest problem solutions will be judged by a script that compares the submitted output file to a reference output file.  The standard UNIX command "DIFF -w" will do the actual comparison, so code your programs accordingly.
 
 Sample problems and the contest judging script are available online at https://github.com/jghafa/contest
 
@@ -27,6 +27,7 @@ The contest problems will have varying degrees of difficultly.
 Each contest problem will have a base score and more difficult problems will score higher.
 
 The first correct solution scores triple the base score, the second scores double, and all subsequent correct answers get the base score.
+
 The time of submittal is determined by the time stamp of the solution file on the judge's computer.
 
 
