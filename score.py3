@@ -151,7 +151,10 @@ f.write ('''<html>
               <body><div class="bottom">
         ''')
 # Team score table
-f.write ("""  <div class="col"><table><caption>Team Scores</caption>
+f.write ("""  <div class="col"><table>
+                <caption>Team Scores<br>""")
+f.write (datetime.now().strftime('%m/%d&nbsp;%H:%M:%S'))
+f.write ("""    </caption>
               <tr><td>Team</td><td>Score</td><td>Solved</td></tr>
          """)
 
