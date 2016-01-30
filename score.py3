@@ -26,6 +26,7 @@ answerFiles  = config['Paths']['AnswerFiles']
 # filename of HTML output
 HTML         = config['Paths']['HTMLOutput']
 css          = config['Paths']['cssOutput']
+Refresh      = config['HTML']['Refresh']
 
 # Get the list of Bonus Points per problem
 # convert the scores into a list of integers
@@ -34,6 +35,9 @@ points = [int(i) if i.isdigit() else i for i in config['Bonus']['Points'].split(
 problems = config['Bonus']['Problems'].split(',')
 # pair the problems and points into a tuple, use it later for initializing bonus db
 BonusPoints = list(zip(problems, points))
+
+# DefaultPoints is the list of possible problems, from 00 to 99.
+DefaultPoints = [("{:0>2d}".format(q), 1) for q in range(0,100)]
 
 #Define the database. The database is completely rebuilt every program run.
 SQLconn = sqlite3.connect('score.sqlite')
@@ -51,7 +55,7 @@ SQL.execute("""
 SQL.execute("""drop table if exists bonus""")
 SQL.execute("""
         create table bonus (
-            problem text,
+            problem text PRIMARY KEY,
             bonus   integer);
           """)
 
@@ -59,7 +63,8 @@ SQL.execute("""
         CREATE INDEX IF NOT EXISTS scoreindex ON score(problem ASC, solved ASC);
           """)
 
-SQL.executemany('insert into bonus values (?,?)', BonusPoints )
+SQL.executemany('INSERT           into bonus values (?,?)', BonusPoints )
+SQL.executemany('INSERT or IGNORE into bonus values (?,?)', DefaultPoints )
 
 #setup is complete
 SQLconn.commit()
@@ -130,7 +135,7 @@ for row in SQL.execute("""SELECT  score.problem, score.team, score.solved,
     # SQLite does not like two cursors active at one time.
     # So save the data in scorelist, and update when this loop ends
     # scorelist contains the bonus, the problem name, and the team name
-    scorelist.append((bonus,row[0],row[1]))
+    scorelist.append((bonus*row[3],row[0],row[1]))
 
 #update the scores with the bonuses saved in scorelist
 SQL.executemany("""UPDATE score 
@@ -145,7 +150,7 @@ f = open(HTML, 'w')
 f.write ('''<html>
               <head>
                 <title>Contest Scores</title>
-                <meta http-equiv="refresh" content="20">
+                <meta http-equiv="refresh" content="''' + Refresh + '''">
                 <link rel="stylesheet" href="''' + css + '''">
               </head>
               <body><div class="bottom">
@@ -208,9 +213,10 @@ f.write ("""</div></body></html>""")
 
 f.close()
 
-f = open(css, 'w')
+try:
+    f = open(css, 'w')
 
-f.write ("""
+    f.write ("""
 div.bottom {
     width: 90%;
     margin-left: none;
@@ -289,7 +295,9 @@ table tfoot td, table tfoot th, table tfoot tr {
 }
 """)
 
-f.close()
+    f.close()
+except PermissionError:
+    pass
 
 #close SQLite3
 SQLconn.commit()
