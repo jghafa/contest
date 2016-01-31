@@ -1,6 +1,6 @@
-Programming Contest Scoring
+#Programming Contest Scoring
 
-Overview of score.py3
+##Overview of score.py3
 The Python script score.py3 is built to judge answers in a programming contest, score them according to the contest rules, and display the scores in a HTML/CSS page.
 
 All problems in the programming contest are based on text files.  Input is from text files, the teams submit answers on text files, and the team answers are compared to a reference text file using the unix command "diff -w".  
