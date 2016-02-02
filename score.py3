@@ -31,13 +31,16 @@ Refresh      = config['HTML']['Refresh']
 # Get the list of Bonus Points per problem
 # convert the scores into a list of integers
 points = [int(i) if i.isdigit() else i for i in config['Bonus']['Points'].split(',')]
-# put the problem names into a list
+# put the problem numbers into a list
 problems = config['Bonus']['Problems'].split(',')
-# pair the problems and points into a tuple, use it later for initializing bonus db
-BonusPoints = list(zip(problems, points))
+# put the problem names into a list
+probname = config['Bonus']['ProbName'].split(',')
+# pair the problems, name and points into a tuple, 
+# use it later for initializing bonus db
+BonusPoints = list(zip(problems, probname, points))
 
 # DefaultPoints is the list of possible problems, from 00 to 99.
-DefaultPoints = [("{:0>2d}".format(q), 1) for q in range(0,100)]
+DefaultPoints = [("{:0>2d}".format(q), '', 1) for q in range(0,100)]
 
 #Define the database. The database is completely rebuilt every program run.
 SQLconn = sqlite3.connect('score.sqlite')
@@ -56,19 +59,15 @@ SQL.execute("""drop table if exists bonus""")
 SQL.execute("""
         create table bonus (
             problem text PRIMARY KEY,
+            name    text,
             bonus   integer);
           """)
 
-SQL.execute("""
-        CREATE INDEX IF NOT EXISTS scoreindex ON score(problem ASC, solved ASC);
-          """)
-
-SQL.executemany('INSERT           into bonus values (?,?)', BonusPoints )
-SQL.executemany('INSERT or IGNORE into bonus values (?,?)', DefaultPoints )
+SQL.executemany('INSERT           into bonus values (?,?,?)', BonusPoints )
+SQL.executemany('INSERT or IGNORE into bonus values (?,?,?)', DefaultPoints )
 
 #setup is complete
 SQLconn.commit()
-
 
 # Read in all the problems
 for file in os.listdir(problemFiles):
@@ -77,13 +76,8 @@ for file in os.listdir(problemFiles):
         f = file.split('-')
         problem = f[0]
         team    = f[1].split('.')[0]
-        #solved  = datetime.datetime.fromtimestamp(os.path.getmtime(problemFiles+file))
-        solved  = os.path.getmtime(problemFiles+file)
 
-        #print (
-        #datetime.datetime.fromtimestamp(os.path.getmtime(problemFiles+file)),
-        #os.path.getmtime(problemFiles+file)
-        #)
+        solved  = os.path.getmtime(problemFiles+file)
 
         returncode = 0
         # Check for correct output
@@ -111,9 +105,9 @@ for file in os.listdir(problemFiles):
             else:
                 if str(solved) < data[0]:
                     # found a better time for this team and problem
-                    SQL.execute("""update score 
-                                  set solved = ? 
-                                  WHERE problem = ? and team = upper(?)""",
+                    SQL.execute("""UPDATE score 
+                                   SET solved = ? 
+                                   WHERE problem = ? and team = upper(?)""",
                         (solved, problem, team))
             SQLconn.commit()
 
@@ -155,7 +149,7 @@ f.write ('''<html>
               </head>
               <body><div class="bottom">
         ''')
-# Team score table
+# Team score summary
 f.write ("""  <div class="col"><table>
                 <caption>Team Scores<br>""")
 f.write (datetime.now().strftime('%m/%d&nbsp;%H:%M:%S'))
@@ -163,7 +157,8 @@ f.write ("""    </caption>
               <tr><td>Team</td><td>Score</td><td>Solved</td></tr>
          """)
 
-for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,count(team) as Completed
+for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,
+                                        count(team) as Completed
                           FROM score
                           GROUP by team
                           ORDER by TeamScore desc"""):
@@ -171,26 +166,31 @@ for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,count(team) as C
             '</td><td align="center">' + str(row[1]) + 
             '</td><td align="center">' + str(row[2]) + 
             '</td></tr>')
-#end the score table
+#end the team score summary
 f.write ("""</table></div>""")
 
-# Problems solved table
+# Problems summary table
 f.write ("""  <div class="col"><table><caption>Problems Solved</caption>
-              <tr><td>Problem</td><td>Solved Count</td></tr>
+              <tr><td>Problem</td><td>Value</td><td># Solved</td></tr>
          """)
 
-for row in SQL.execute("""SELECT problem, count(problem) as countprob 
-                          FROM score
-                          GROUP by problem
-                          ORDER by problem"""):
+for row in SQL.execute("""SELECT score.problem || '-'  || bonus.name as problem,
+                                 bonus.bonus, 
+                                 count(score.problem) as countprob 
+                          FROM score, bonus 
+                          WHERE score.problem = bonus.problem 
+                          GROUP by score.problem
+                          ORDER by score.problem
+                       """):
 
     f.write('</td><td align="center">' +     row[0]  + 
             '</td><td align="center">' + str(row[1]) + 
+            '</td><td align="center">' + str(row[2]) + 
             '</td></tr>')
-#end the problems solved table
+#end the problems summary table
 f.write ("""</table></div>""")
 
-# Problems solved table
+# Problems solved sorted by time 
 f.write ("""  <div class="col"><table><caption>All Problems Solved</caption>
               <tr><td>Problem</td><td>Team</td><td>Time&nbsp;Submitted</td><td>Score</td></tr>
          """)
@@ -204,15 +204,15 @@ for row in SQL.execute("""SELECT  problem, team, solved, score
              datetime.fromtimestamp(float(row[2])).strftime('%m-%d&nbsp;%H:%M:%S') +
             '</td><td align="center">'+ str(row[3]) + 
             '</td></tr>')
-#end the problems solved table
+#end of Problems solved sort by time
 f.write ("""</table></div>""")
-
 
 # end the html body
 f.write ("""</div></body></html>""")
 
 f.close()
 
+# try to write the CSS, may fail if CSS is readonly
 try:
     f = open(css, 'w')
 
