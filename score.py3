@@ -150,11 +150,11 @@ f.write ('''<html>
               <body><div class="bottom">
         ''')
 # Team score summary
-f.write ("""  <div class="col"><table>
-                <caption>Team Scores<br>""")
+f.write ("""  <div class="left"><table><caption>""")
 f.write (datetime.now().strftime('%m/%d&nbsp;%H:%M:%S'))
+f.write ("""    <br>Team Scores""")
 f.write ("""    </caption>
-              <tr><td>Team</td><td>Score</td><td>Solved</td></tr>
+              <tr><td>Team</td><td>Score</td><td>#</td></tr>
          """)
 
 for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,
@@ -170,8 +170,8 @@ for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,
 f.write ("""</table></div>""")
 
 # Problems summary table
-f.write ("""  <div class="col"><table><caption>Problems Solved</caption>
-              <tr><td>Problem</td><td>Value</td><td># Solved</td></tr>
+f.write ("""  <div class="left"><table><caption><br>Problems Solved</caption>
+              <tr><td>Problem</td><td>Value</td><td>#</td></tr>
          """)
 
 for row in SQL.execute("""SELECT score.problem || '-'  || bonus.name as problem,
@@ -191,13 +191,13 @@ for row in SQL.execute("""SELECT score.problem || '-'  || bonus.name as problem,
 f.write ("""</table></div>""")
 
 # Problems solved sorted by time 
-f.write ("""  <div class="col"><table><caption>All Problems Solved</caption>
+f.write ("""  <div class="col"><table><caption><br>All Problems Solved</caption>
               <tr><td>Problem</td><td>Team</td><td>Time&nbsp;Submitted</td><td>Score</td></tr>
          """)
 
 for row in SQL.execute("""SELECT  problem, team, solved, score
                           FROM score
-                          ORDER by solved asc"""):
+                          ORDER by solved desc"""):
     f.write('</td><td align="center">'+     row[0]  + 
             '</td><td>'               + str(row[1]) + 
             '</td><td align="left";style="white-space:nowrap;">'+ 
@@ -225,9 +225,14 @@ div.bottom {
     margin-bottom: none;
 }
 
+div.left {
+    float: left;
+    width: 22% ;
+}
+
 div.col {
     float: left;
-    width: 33% ;
+    width: 56% ;
 }
 
 body {
