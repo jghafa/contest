@@ -147,7 +147,7 @@ f.write ('''<html>
                 <meta http-equiv="refresh" content="''' + Refresh + '''">
                 <link rel="stylesheet" href="''' + css + '''">
               </head>
-              <body><div class="bottom">
+              <body><div class="body">
         ''')
 # Team score summary
 f.write ("""  <div class="left"><table><caption>""")
@@ -170,7 +170,7 @@ for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,
 f.write ("""</table></div>""")
 
 # Problems summary table
-f.write ("""  <div class="left"><table><caption><br>Problems Solved</caption>
+f.write ("""  <div class="col"><table><caption><br>Problems Solved</caption>
               <tr><td>Problem</td><td>Value</td><td>#</td></tr>
          """)
 
@@ -183,7 +183,7 @@ for row in SQL.execute("""SELECT score.problem || '-'  || bonus.name as problem,
                           ORDER by score.problem
                        """):
 
-    f.write('</td><td align="center">' +     row[0]  + 
+    f.write('</td><td align="left">' +     row[0]  + 
             '</td><td align="center">' + str(row[1]) + 
             '</td><td align="center">' + str(row[2]) + 
             '</td></tr>')
@@ -217,22 +217,23 @@ try:
     f = open(css, 'w')
 
     f.write ("""
-div.bottom {
-    width: 90%;
+div.body {
+    width: 95%;
     margin-left: none;
-    margin-right: auto;
+    margin-right: none;
     margin-top: none;
     margin-bottom: none;
 }
 
 div.left {
+    margin-right: 10px;
     float: left;
-    width: 22% ;
+    width: 25%;
 }
 
 div.col {
     float: left;
-    width: 56% ;
+    width: 33%;
 }
 
 body {
@@ -264,40 +265,11 @@ table thead th {
   font-weight: normal;
 }
 
-table tbody, table thead {
-  border-left:  1px solid #EAECEE;
-  border-right: 1px solid #EAECEE;
-}
-
-table tbody {
-  border-bottom: 1px solid #EAECEE;
-}
-
 table tbody td, table tbody th {
     border-width: 2px 2px 2px 2px;
     border-style: groove groove groove groove ;
   padding: 2px 4px 2px 5px;
  }
-
-table tbody tr {
-  background: #F3F5F7;
-}
-
-table tbody tr.odd {
-  background: #F0F2F4;
-}
-
-table tbody  tr:hover {
-  background: #EAECEE;
-  color: #111;
-}
-
-table tfoot td, table tfoot th, table tfoot tr {
-  font: 120%  "Arial", sans-serif;
-  text-transform: uppercase;
-  background: #fff;
-  padding: 5px;
-}
 """)
 
     f.close()
