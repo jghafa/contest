@@ -21,13 +21,16 @@ trans.py3 uses the same ini as score.py3, as they both are concerned with the sa
 import sys
 import configparser
 import subprocess
+from datetime import datetime
 
 config = configparser.ConfigParser()
 config.read('score.ini')
 
 # directory of problems to score
 problemFiles = config['Paths']['ProblemFiles']
+logOutput=config['Paths']['logOutput']
 
+log = open(logOutput, 'a')
 
 f = open('test.HTML', 'w')
 
@@ -52,7 +55,8 @@ for a in range(2, len(sys.argv)):
     x = subprocess.check_call(['cp',
                                 sys.argv[1] + '/' + sys.argv[a],
                                 problemFiles])
-
+    log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
+                sys.argv[1] + '/' + sys.argv[a]+ '\n')
 
 # end the html body
 f.write ("""</div></body></html>""")
