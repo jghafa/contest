@@ -74,6 +74,9 @@ for file in os.listdir(problemFiles):
     if file.endswith('.txt'):
         # Split filename at the dash, get the problem number
         f = file.split('-')
+        # if the filename has no problem number, continue to next file
+        if len(f) < 2:
+            continue
         problem = f[0]
         team    = f[1].split('.')[0]
 
