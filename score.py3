@@ -154,7 +154,7 @@ f.write ("""  <div class="left"><table><caption>""")
 f.write (datetime.now().strftime('%m/%d&nbsp;%H:%M:%S'))
 f.write ("""    <br>Team Scores""")
 f.write ("""    </caption>
-              <tr><td>Team</td><td>Score</td><td>#</td></tr>
+              <tr><th align="left">Team</th><th>Score</th><th>#</th></tr>
          """)
 
 for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,
@@ -171,7 +171,7 @@ f.write ("""</table></div>""")
 
 # Problems summary table
 f.write ("""  <div class="col"><table><caption><br>Problems Solved</caption>
-              <tr><td>Problem</td><td>Value</td><td>#</td></tr>
+              <tr><th align="left">Problem</th><th>Value</th><th>#</th></tr>
          """)
 
 for row in SQL.execute("""SELECT score.problem || '-'  || bonus.name as problem,
@@ -192,7 +192,7 @@ f.write ("""</table></div>""")
 
 # Problems solved sorted by time 
 f.write ("""  <div class="col"><table><caption><br>All Problems Solved</caption>
-              <tr><td>Problem</td><td>Team</td><td>Time&nbsp;Submitted</td><td>Score</td></tr>
+              <tr><th>Problem</th><th align="left">Team</th><th>Time&nbsp;Submitted</th><th>Score</th></tr>
          """)
 
 for row in SQL.execute("""SELECT  problem, team, solved, score
