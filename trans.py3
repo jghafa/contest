@@ -20,6 +20,7 @@ trans.py3 uses the same ini as score.py3, as they both are concerned with the sa
 
 import sys
 import configparser
+import subprocess
 
 config = configparser.ConfigParser()
 config.read('score.ini')
@@ -48,6 +49,10 @@ f.write ('from dir = ' + sys.argv[1])
 for a in range(2, len(sys.argv)):
     f.write ("""<br>""")
     f.write (str(a) +' = '+ sys.argv[a])
+    x = subprocess.check_call(['cp',
+                                sys.argv[1] + '/' + sys.argv[a],
+                                problemFiles])
+
 
 # end the html body
 f.write ("""</div></body></html>""")
