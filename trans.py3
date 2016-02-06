@@ -41,4 +41,11 @@ for a in range(2, len(sys.argv)):
     log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
                 sys.argv[1] + '/' + sys.argv[a]+ '\n')
 
+# calc the scores and update the html
+try:
+    x = subprocess.check_call(['/home/jghafa/contest/score.py3'])
+except FileNotFoundError as e:
+    log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
+                'error - score not found' + '\n')
+
 log.close()
