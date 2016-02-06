@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gconfentryfile>
+  <entrylist base="/apps/nautilus-actions/configurations/8fe1e59b-7f2b-4c21-84b8-96ede492fedb">
+    <entry>
+      <key>type</key>
+      <value>
+        <string>Action</string>
+      </value>
+    </entry>
+    <entry>
+      <key>iversion</key>
+      <value>
+        <int>3</int>
+      </value>
+    </entry>
+    <entry>
+      <key>items</key>
+      <value>
+        <list type="string">
+          <value>
+            <string>profile-zero</string>
+          </value>
+        </list>
+      </value>
+    </entry>
+    <entry>
+      <key>label</key>
+      <value>
+        <string>Transfer</string>
+      </value>
+    </entry>
+    <entry>
+      <key>tooltip</key>
+      <value>
+        <string>Transfer Contest Entry</string>
+      </value>
+    </entry>
+    <entry>
+      <key>icon</key>
+      <value>
+        <string>add</string>
+      </value>
+    </entry>
+    <entry>
+      <key>toolbar-label</key>
+      <value>
+        <string>Transfer</string>
+      </value>
+    </entry>
+    <entry>
+      <key>profile-zero/desc-name</key>
+      <value>
+        <string>Default profile</string>
+      </value>
+    </entry>
+    <entry>
+      <key>profile-zero/path</key>
+      <value>
+        <string>/home/jghafa/contest/trans.py3</string>
+      </value>
+    </entry>
+    <entry>
+      <key>profile-zero/parameters</key>
+      <value>
+        <string>%O %d %B</string>
+      </value>
+    </entry>
+    <entry>
+      <key>profile-zero/working-dir</key>
+      <value>
+        <string>/home/jghafa/contest</string>
+      </value>
+    </entry>
+    <entry>
+      <key>profile-zero/basenames</key>
+      <value>
+        <list type="string">
+          <value>
+            <string>*.txt</string>
+          </value>
+        </list>
+      </value>
+    </entry>
+    <entry>
+      <key>profile-zero/matchcase</key>
+      <value>
+        <bool>false</bool>
+      </value>
+    </entry>
+  </entrylist>
+</gconfentryfile>

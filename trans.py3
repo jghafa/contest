@@ -1,9 +1,31 @@
 #!/usr/bin/python3
 """
-Transfer files to the game day directory
+Transfer files to the game directory via right-click in Files.
+
+Require Linux and nautilus-action
+sudo apt-get install nautilus-action
+
+The action file needed by trans.py3 has been exported as an action*.xml file.
+The action file has been limited to only send .txt files to trans.py3.
+
+trans.py3 parameters
+argv[0] is the program name, trans.py3
+argv[1] is the directory that contains the files to transfer.
+argv[2] is the first file name to transfer.
+argv[x] are the rest of the file names to transfer
+
+trans.py3 uses the same ini as score.py3, as they both are concerned with the same files
+
 """
 
 import sys
+import configparser
+
+config = configparser.ConfigParser()
+config.read('score.ini')
+
+# directory of problems to score
+problemFiles = config['Paths']['ProblemFiles']
 
 
 f = open('test.HTML', 'w')
@@ -17,7 +39,15 @@ f.write ('''<html>
               <body><div class="body">
         ''')
 f.write (str(sys.argv))
+f.write ("""<br>""")
+f.write (' to  dir = ' + problemFiles)
+f.write ("""<br>""")
+f.write ('from dir = ' + sys.argv[1])
 
+#for a in sys.argv:
+for a in range(2, len(sys.argv)):
+    f.write ("""<br>""")
+    f.write (str(a) +' = '+ sys.argv[a])
 
 # end the html body
 f.write ("""</div></body></html>""")
