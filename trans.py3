@@ -30,6 +30,8 @@ config.read('score.ini')
 problemFiles = config['Paths']['ProblemFiles']
 # location of the log file
 logOutput=config['Paths']['logOutput']
+# location of the score program file
+scoreProg=config['Paths']['scoreProg']
 
 log = open(logOutput, 'a')
 
@@ -43,7 +45,7 @@ for a in range(2, len(sys.argv)):
 
 # calc the scores and update the html
 try:
-    x = subprocess.check_call(['/home/jghafa/contest/score.py3'])
+    x = subprocess.check_call([scoreProg])
 except FileNotFoundError as e:
     log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
                 'error - score not found' + '\n')

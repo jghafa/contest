@@ -26,7 +26,7 @@
     <entry>
       <key>label</key>
       <value>
-        <string>Transfer</string>
+        <string>Submit Contest Entry</string>
       </value>
     </entry>
     <entry>
@@ -44,7 +44,7 @@
     <entry>
       <key>toolbar-label</key>
       <value>
-        <string>Transfer</string>
+        <string>Submit Contest Entry</string>
       </value>
     </entry>
     <entry>
@@ -68,7 +68,7 @@
     <entry>
       <key>profile-zero/working-dir</key>
       <value>
-        <string>/home/jghafa</string>
+        <string>/home/jghafa/contest</string>
       </value>
     </entry>
     <entry>
