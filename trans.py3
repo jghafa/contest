@@ -1,13 +1,8 @@
 #!/usr/bin/python3
 """
-Transfer files to the game directory, with a log of files moved
-
-In Linux, you can invoke the program via a right-click in Files.
-The right-click action requires nautilus-action to set it up.
-sudo apt-get install nautilus-action
-
-The action file needed by trans.py3 has been exported as an action*.xml file.
-The action file has been limited to only send .txt files to trans.py3.
+Transfer files to the game directory
+Creates a log of files moved
+Calls the score program
 
 trans.py3 parameters
 argv[0] is the program name, trans.py3
@@ -16,6 +11,13 @@ argv[2] is the first file name to transfer.
 argv[x] are the rest of the file names to transfer
 
 trans.py3 uses the same ini as score.py3, as they both are concerned with the same files
+
+Under Linux, you can invoke the program via a right-click in Files.
+The right-click action requires nautilus-action to set it up.
+sudo apt-get install nautilus-action
+
+The action file needed by trans.py3 has been exported as an action*.xml file.
+The action file makes Files only offer action to .txt files.
 """
 
 import sys

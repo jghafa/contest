@@ -55,6 +55,14 @@ SQL.execute("""
             score   integer);
           """)
 
+SQL.execute("""drop table if exists failed""")
+SQL.execute("""
+        create table failed (
+            problem text,
+            team    text,
+            solved  text);
+          """)
+
 SQL.execute("""drop table if exists bonus""")
 SQL.execute("""
         create table bonus (
@@ -113,6 +121,10 @@ for file in os.listdir(problemFiles):
                                    WHERE problem = ? and team = upper(?)""",
                         (solved, problem, team))
             SQLconn.commit()
+        else:
+            # track the failures
+            SQL.execute("INSERT into failed values (?, upper(?), ?)", 
+                (problem, team, solved))
 
 # Read the database and set the scores
 last = ''
@@ -152,8 +164,10 @@ f.write ('''<html>
               </head>
               <body><div class="body">
         ''')
+# First Div
+f.write ("""<div class="left">""")
 # Team score summary
-f.write ("""  <div class="left"><table><caption>""")
+f.write ("""<table><caption>""")
 f.write (datetime.now().strftime('%m/%d&nbsp;%H:%M:%S'))
 f.write ("""    <br>Team Scores""")
 f.write ("""    </caption>
@@ -170,7 +184,28 @@ for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,
             '</td><td align="center">' + str(row[2]) + 
             '</td></tr>')
 #end the team score summary
-f.write ("""</table></div>""")
+f.write ("""</table>""")
+
+# Failed Problems sorted by time 
+f.write ("""<table><caption><br>Failed Attempts</caption>
+            <tr><th>Problem</th>
+            <th align="left">Team</th>
+            <th>Time</th></tr>
+         """)
+
+for row in SQL.execute("""SELECT  problem, team, solved
+                          FROM failed
+                          ORDER by solved desc"""):
+    f.write('</td><td align="center">'+     row[0]  + 
+            '</td><td>'               + str(row[1]) + 
+            '</td><td align="left";style="white-space:nowrap;">'+ 
+             datetime.fromtimestamp(float(row[2])).strftime('%H:%M:%S') +
+            '</td></tr>')
+#end of Failed Problems sort by time
+f.write ("""</table>""")
+
+# end first div
+f.write ("""</div>""")
 
 # Problems summary table
 f.write ("""  <div class="col"><table><caption><br>Problems Solved</caption>
@@ -193,9 +228,14 @@ for row in SQL.execute("""SELECT score.problem || '-'  || bonus.name as problem,
 #end the problems summary table
 f.write ("""</table></div>""")
 
+# third div
+f.write ("""  <div class="col"> """)
+
 # Problems solved sorted by time 
-f.write ("""  <div class="col"><table><caption><br>All Problems Solved</caption>
-              <tr><th>Problem</th><th align="left">Team</th><th>Time&nbsp;Submitted</th><th>Score</th></tr>
+f.write ("""<table><caption><br>Sucessful Submittals</caption>
+            <tr><th>Problem</th>
+            <th align="left">Team</th>
+            <th>Time</th><th>Score</th></tr>
          """)
 
 for row in SQL.execute("""SELECT  problem, team, solved, score
@@ -208,7 +248,10 @@ for row in SQL.execute("""SELECT  problem, team, solved, score
             '</td><td align="center">'+ str(row[3]) + 
             '</td></tr>')
 #end of Problems solved sort by time
-f.write ("""</table></div>""")
+f.write ("""</table>""")
+
+# Third div
+f.write ("""</div>""")
 
 # end the html body
 f.write ("""</div></body></html>""")
