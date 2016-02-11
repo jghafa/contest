@@ -33,6 +33,7 @@ import subprocess
 from datetime import datetime
 import os
 import tkinter.messagebox
+import sqlite3
 
 # Hide the tk dialog window
 root = tkinter.Tk()
@@ -48,27 +49,59 @@ logOutput=config['Paths']['logOutput']
 # location of the score program file
 scoreProg=config['Paths']['scoreProg']
 
+SQLfilename, file_extension = os.path.splitext(scoreProg)
+
+SQLavailable = False
+if os.path.isfile(SQLfilename+'.sqlite'):
+    #SQL exists
+    SQLconn = sqlite3.connect(SQLfilename+'.sqlite')
+    SQL = SQLconn.cursor()
+    SQLavailable = True
+
 log = open(logOutput, 'a')
 
 # loop through the parameters to get the files to copy
 for a in range(2, len(sys.argv)):
-    #check if the file is already there, as the file date will get reset
-    if os.path.isfile(problemFiles+sys.argv[a]):
-        if tkinter.messagebox.askokcancel("Duplicate Entry.", 
-                         "Click OK to submit again.\n"+sys.argv[a]):
-            pass
-        else:
-            log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
-                'Canceled submit for ' + sys.argv[a]+ '\n')
+    fname = os.path.basename(sys.argv[a])
+    if SQLavailable:
+        # Split filename at the dash, get the problem number
+        f = fname.split('-')
+        # if the filename has no problem number, continue to next file
+        if len(f) < 2:
             continue
-    # OK, copy the file
-    x = subprocess.check_call(['cp',
-                                sys.argv[1] + '/' + sys.argv[a],
-                                problemFiles])
-    log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
-                sys.argv[1] + '/' + sys.argv[a]+ '\n')
+        problem = f[0]
+        team    = f[1].split('.')[0]
 
+        SQL.execute("""SELECT solved 
+                       FROM score 
+                       WHERE problem = ? and team = upper(?)""",
+                    (problem, team ))
+        data = SQL.fetchone()
+        if data is not None:
+            # This team has already solved this one
+            if tkinter.messagebox.askokcancel("Already Solved", 
+                    "Click OK to submit again.\n"+fname,
+                    default = tkinter.messagebox.CANCEL):
+                log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
+                    'Already Solved ' + fname+ '\n')
+                pass
+            else:
+                log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
+                    'Canceled submit for ' + fname+ '\n')
+                continue
+
+    # OK, copy the file
+    sourcedir = sys.argv[1]
+    if sourcedir[-1] != '/':
+        sourcedir += '/'
+    log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
+                sourcedir + fname + '\n')
+    x = subprocess.check_call(['cp',
+                                sourcedir + fname,
+                                problemFiles])
+ 
 # calc the scores and update the html
+
 try:
     x = subprocess.check_call([scoreProg])
 except FileNotFoundError as e:
