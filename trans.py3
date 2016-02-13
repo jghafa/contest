@@ -29,7 +29,7 @@ sudo apt-get install python3-tk
 
 import sys
 import configparser
-import subprocess
+import shutil
 from datetime import datetime
 import os
 import tkinter.messagebox
@@ -49,6 +49,8 @@ logOutput=config['Paths']['logOutput']
 # location of the score program file
 scoreProg=config['Paths']['scoreProg']
 
+log = open(logOutput, 'a')
+
 SQLfilename, file_extension = os.path.splitext(scoreProg)
 
 SQLavailable = False
@@ -57,8 +59,9 @@ if os.path.isfile(SQLfilename+'.sqlite'):
     SQLconn = sqlite3.connect(SQLfilename+'.sqlite')
     SQL = SQLconn.cursor()
     SQLavailable = True
-
-log = open(logOutput, 'a')
+else:
+    log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
+                ' SQLite file not found.\n')
 
 # loop through the parameters to get the files to copy
 for a in range(2, len(sys.argv)):
@@ -71,7 +74,7 @@ for a in range(2, len(sys.argv)):
             continue
         problem = f[0]
         team    = f[1].split('.')[0]
-
+        # Did this team already solve the problem?
         SQL.execute("""SELECT solved 
                        FROM score 
                        WHERE problem = ? and team = upper(?)""",
@@ -84,10 +87,12 @@ for a in range(2, len(sys.argv)):
                     default = tkinter.messagebox.CANCEL):
                 log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
                     'Already Solved ' + fname+ '\n')
+                # Update anyway - this will change submit time to now.
                 pass
             else:
                 log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
                     'Canceled submit for ' + fname+ '\n')
+                #Don't submit again
                 continue
 
     # OK, copy the file
@@ -96,14 +101,11 @@ for a in range(2, len(sys.argv)):
         sourcedir += '/'
     log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
                 sourcedir + fname + '\n')
-    x = subprocess.check_call(['cp',
-                                sourcedir + fname,
-                                problemFiles])
+    shutil.copy(sourcedir + fname, problemFiles)
  
 # calc the scores and update the html
-
 try:
-    x = subprocess.check_call([scoreProg])
+    exec(open(scoreProg).read())
 except FileNotFoundError as e:
     log.write(datetime.now().strftime('%y/%m/%d %H:%M:%S, ') + 
                 'error - score not found' + '\n')
