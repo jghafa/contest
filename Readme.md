@@ -1,4 +1,4 @@
-#Programming Contest Scoring
+#Programming Contest Scoring Documentation
 
 ##Overview of score.py3
 The Python script score.py3 is built to judge answers in a programming contest, score them according to the contest rules, and display the scores in a HTML/CSS page.
@@ -9,7 +9,18 @@ The HTML/CSS are hosted in a local file, and a web server is not needed.  The HT
 
 The Python script rebuilds a SQLite3 database with each run.  The database is retained after the script finishes as the record of the contest.
 
-##Filenames
+
+##Overview of trans.py3
+The Python script trans.py3 quickly moves progam submissions on game day. It moves selected files from the submitting USB drive to designated folder.  The folders are specified in the scores.ini file.
+It can be called via a right-click in the file browser.
+
+
+##Overview of contestfiles.p3y
+The Python script contestfiles.py3 quickly moves problem descriptions, program input, and contest rules to a designated folder. The folders are specified in the scores.ini file.
+It can be called via a right-click in the file browser.
+
+
+##Filename Descriptions
 Submitted answers and reference answer must follow a specific file name pattern.  The AnswerFiles are our correct, expected answer.  ProblemFiles are the team's submitted answers.
 
 ###AnswerFiles 
@@ -25,7 +36,7 @@ In the example, the team name is "Team A" and they have submitted an answer for 
 The script considers "TEAM A" and "team a" to indicate the same team.
 
 
-##score.ini
+##Initialization File Description
 The file score.ini configures the program, allowing you to set file path names and set the scores awarded for each problem.
 
 The [Paths] section of score.ini sets file paths:
@@ -49,6 +60,27 @@ Sets the path to the contest summary web page.  This file is overwritten with ea
 Sets the path to the HTML CSS file.  This file is overwritten with each run of the program.  However, if the css file is marked readonly the script does not attempt a re-write.
 
 `cssOutput=/home/jghafa/scores.css`
+
+###logOutput
+Location of the log file. The log files tracks script submissions, and logs errors.
+
+`/home/jghafa/scores.log`
+
+###scoreProg
+The location of the scoring script.  The transfer script invokes the score script to update the web page.
+
+`/home/jghafa/contest/score.py3`
+
+###TeamHandouts
+The location of problems and inputs to give to the teams.  contestfiles.py3 uses this.
+
+`/home/jghafa/2016Problems/`
+
+###HandoutDir
+The new directory on USB drives that will get the problem descriptions and inputs.
+
+`ContestFiles2016/`
+
 
 
 The [Bonus] section of score.ini controls the score assigned to a problem.
