@@ -15,7 +15,11 @@ argv[1] is the directory that contains the files to transfer.
 argv[2] is the first file name to transfer.
 argv[x] are the rest of the file names to transfer
 
-trans.py3 uses the same ini as score.py3, as they both are concerned with the same files
+trans.py3 uses the same ini as score.py3.
+config['Paths']['ProblemFiles'] - Where to put the files to be judged
+config['Paths']['logOutput'] - the log file location
+config['Paths']['scoreProg'] - the script to calc and show the score
+
 
 Under Linux, the right-click action requires nautilus-action to define it.
 sudo apt-get install nautilus-action
