@@ -33,9 +33,10 @@ import configparser
 import glob
 import shutil
 
-# Hide the tk dialog window
+# Hide the tk dialog window behind the messagebox
 root = tkinter.Tk()
-root.withdraw()
+# Stop using root.withdraw(), but set geometry to handle dual screens
+root.geometry('1x1+700-250')
 
 config = configparser.ConfigParser()
 config.read('score.ini')
