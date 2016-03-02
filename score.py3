@@ -272,7 +272,7 @@ div.body {
 }
 
 div.left {
-    margin-right: 10px;
+    margin-right: 60px;
     float: left;
     width: 25%;
 }
@@ -291,8 +291,8 @@ body {
 table {
   font: 100% "Arial", sans-serif;
   border-width: 1px 1px 1px 1px;
-  padding: 0;
-  margin: 0;
+  padding: 2;
+  margin: 2;
   border-collapse: collapse;
   color: #333;
   background: #F3F5F7;
