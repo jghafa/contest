@@ -93,7 +93,7 @@ for file in os.listdir(problemFiles):
         returncode = 0
         # Check for correct output
         try:
-            x = subprocess.check_call(['diff','-w',
+            x = subprocess.check_call(['diff','-w', '-B',
                                         problemFiles+file,
                                         answerFiles+problem+'.txt'],
                                         stdout=subprocess.DEVNULL)
