@@ -4,7 +4,7 @@ score.py3 scores a programming contest.
 Features:
 Grades team submittals by comparing them to a reference answer, using the diff utility.
 Assigns points to an entry, based on matching the reference and the time stamp of the entry.
-Stores the sucessful entries in an SQLite3 database.
+Stores the successful entries in an SQLite3 database.
 Writes results to an HTML file that auto refreshes.
 
 Parameters to score are stored in score.ini.
@@ -232,7 +232,7 @@ f.write ("""</table></div>""")
 f.write ("""  <div class="col"> """)
 
 # Problems solved sorted by time 
-f.write ("""<table><caption><br>Sucessful Submittals</caption>
+f.write ("""<table><caption><br>Successful Submittals</caption>
             <tr><th>Problem</th>
             <th align="left">Team</th>
             <th>Time</th><th>Score</th></tr>
