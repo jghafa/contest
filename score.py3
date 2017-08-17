@@ -30,14 +30,20 @@ Refresh      = config['HTML']['Refresh']
 
 # Get the list of Bonus Points per problem
 # convert the scores into a list of integers
-points = [int(i) if i.isdigit() else i for i in config['Bonus']['Points'].split(',')]
+#points = [int(i) if i.isdigit() else i for i in config['Bonus']['Points'].split(',')]
 # put the problem numbers into a list
-problems = config['Bonus']['Problems'].split(',')
+#problems = config['Bonus']['Problems'].split(',')
 # put the problem names into a list
-probname = config['Bonus']['ProbName'].split(',')
+#probname = config['Bonus']['ProbName'].split(',')
 # pair the problems, name and points into a tuple, 
 # use it later for initializing bonus db
-BonusPoints = list(zip(problems, probname, points))
+#BonusPoints = list(zip(problems, probname, points))
+
+# New way inputing Bonus Points
+BPList = config['Bonus']['BP']
+BonusPoints = [(x.split(',')[0].strip(),
+                x.split(',')[1].strip(),
+                int(x.split(',')[2])) for x in BPList.split(':')]
 
 # DefaultPoints is the list of possible problems, from 00 to 99.
 DefaultPoints = [("{:0>2d}".format(q), '', 1) for q in range(0,100)]
