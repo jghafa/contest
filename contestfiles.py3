@@ -13,7 +13,8 @@ argv[0] is the program name, contestfiles.py3
 argv[1] is the target directory to receive the files.
 
 contestfiles.py3 uses the same ini as score.py3.
-config['Paths']['TeamHandouts'] is the location of the Problem and Input files.
+config['Paths']['DescFiles'] is the location of the Problem Desscription files.
+config['Paths']['InputFiles'] is the location of the Problem Input files.
 config['Paths']['HandoutDir'] the new dir name on the target USB drive
 
 Under Linux, the right-click action requires nautilus-action to define it.
@@ -42,7 +43,8 @@ config = configparser.ConfigParser()
 config.read('score.ini')
 
 # directory of problem descriptions and inputs
-TeamHandouts = config['Paths']['TeamHandouts']
+DescFiles = config['Paths']['DescFiles']
+InputFiles = config['Paths']['InputFiles']
 # the name of the new dir where the files will be copied
 path = config['Paths']['HandoutDir']
 
@@ -54,7 +56,7 @@ if targetdir[-1] != '/':
 if tkinter.messagebox.askokcancel("Copy Files?", 'Copy files to\n' + targetdir + path,
                     default = tkinter.messagebox.OK):
     os.makedirs(targetdir+path, exist_ok=True)
-    for file in glob.glob(TeamHandouts + 'Pro*.*'):
+    for file in glob.glob(DescFiles + 'Pro*.*'):
         shutil.copy(file, targetdir + path)
-    for file in glob.glob(TeamHandouts + 'Input*.txt'):
+    for file in glob.glob(InputFiles + 'Input*.[tT][xX][tT]'):
         shutil.copy(file, targetdir + path)
