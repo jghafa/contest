@@ -12,6 +12,8 @@ Parameters to score are stored in score.ini.
 
 import configparser
 import os
+import hashlib
+import glob
 import subprocess
 from datetime import datetime
 import sqlite3
@@ -48,6 +50,8 @@ BonusPoints = [(x.split(',')[0].strip(),
 # DefaultPoints is the list of possible problems, from 00 to 99.
 DefaultPoints = [("{:0>2d}".format(q), '', 1) for q in range(0,100)]
 
+FailList=[]
+
 #Define the database. The database is completely rebuilt every program run.
 SQLconn = sqlite3.connect('score.sqlite')
 SQL = SQLconn.cursor()
@@ -83,54 +87,65 @@ SQL.executemany('INSERT or IGNORE into bonus values (?,?,?)', DefaultPoints )
 #setup is complete
 SQLconn.commit()
 
+#print('BonusPoints=',BonusPoints)
+
 # Read in all the problems
-for file in os.listdir(problemFiles):
-    if file.endswith('.txt'):
-        # Split filename at the dash, get the problem number
-        f = file.split('-')
-        # if the filename has no problem number, continue to next file
-        if len(f) < 2:
-            continue
-        problem = f[0]
-        team    = f[1].split('.')[0]
+for files in glob.glob(problemFiles+'*.[tT][xX][tT]'):
+    file = files.split('/')[-1]
+    # Split filename at the dash, get the problem number
+    problem, team = file.split('.')[0].split('-')
+    # if the filename has no problem number, continue to next file
+    if not problem in [pnum for pnum,pname,ppt in BonusPoints]:
+        continue
 
-        solved  = os.path.getmtime(problemFiles+file)
+    solved  = os.path.getmtime(problemFiles+file)
 
-        returncode = 0
-        # Check for correct output
-        try:
-            x = subprocess.check_call(['diff','-w', '-B',
-                                        problemFiles+file,
-                                        answerFiles+problem+'.txt'],
-                                        stdout=subprocess.DEVNULL)
-        # diff succeeds when the answer is right, exceptions are wrong answers
-        except subprocess.CalledProcessError as e:
-            returncode = e.returncode
+    returncode = 0
+    # Check for correct output
+    try:
+        x = subprocess.check_call(['diff','-w', '-B',
+                                    problemFiles+file,
+                                    answerFiles+problem+'.txt'],
+                                    stdout=subprocess.DEVNULL)
+    # diff succeeds when the answer is right, exceptions are wrong answers
+    except subprocess.CalledProcessError as e:
+        returncode = e.returncode
 
-        # Return code of zero means the answer is correct
-        if returncode == 0:
-            # 
-            SQL.execute("""SELECT solved 
-                           FROM score 
-                           WHERE problem = ? and team = upper(?)""",
-                    (problem, team ))
-            data = SQL.fetchone()
-            if data is None:
-                #print (problem, team, solved)
-                SQL.execute("INSERT into score values (?, upper(?), ?, 0)", 
-                    (problem, team, solved))
-            else:
-                if str(solved) < data[0]:
-                    # found a better time for this team and problem
-                    SQL.execute("""UPDATE score 
-                                   SET solved = ? 
-                                   WHERE problem = ? and team = upper(?)""",
-                        (solved, problem, team))
-            SQLconn.commit()
-        else:
-            # track the failures
-            SQL.execute("INSERT into failed values (?, upper(?), ?)", 
+    # Return code of zero means the answer is correct
+    if returncode == 0:
+        # 
+        SQL.execute("""SELECT solved 
+                       FROM score 
+                       WHERE problem = ? and team = upper(?)""",
+                (problem, team ))
+        data = SQL.fetchone()
+        if data is None:
+            #print (problem, team, solved)
+            SQL.execute("INSERT into score values (?, upper(?), ?, 0)", 
                 (problem, team, solved))
+        else:
+            if str(solved) < data[0]:
+                # found a better time for this team and problem
+                SQL.execute("""UPDATE score 
+                               SET solved = ? 
+                               WHERE problem = ? and team = upper(?)""",
+                    (solved, problem, team))
+        SQLconn.commit()
+    else:
+        # track the failures
+        sha256 = hashlib.sha256(open(problemFiles+file, 'rb').read()).hexdigest()
+        os.rename(problemFiles+file,
+                  problemFiles+problem+'-'+team+'-'+sha256+'.fail')
+
+for files in glob.glob(problemFiles+'*.[fF][aA][iI][lL]'):
+    solved  = os.path.getmtime(files)
+    file = files.split('/')[-1]
+    # Split filename at the dash, get the problem number
+    problem, team, sha256 = file.split('.')[0].split('-')
+    FailList.append((team,problem))
+    SQL.execute("INSERT into failed values (?, upper(?), ?)", 
+        (problem, team, solved))
+SQLconn.commit()
 
 # Read the database and set the scores
 last = ''
@@ -185,9 +200,10 @@ for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,
                           FROM score
                           GROUP by team
                           ORDER by TeamScore desc"""):
+    failCount = len([y for y in FailList if y[0].upper()==row[0]])
     f.write('<tr><td>'                 +     row[0]  + 
-            '</td><td align="center">' + str(row[1]) + 
-            '</td><td align="center">' + str(row[2]) + 
+            '</td><td align="center">' + str(row[1]) +
+            '</td><td align="center">' + str(row[2]) + '/' +str(row[2]+failCount)+ 
             '</td></tr>')
 #end the team score summary
 f.write ("""</table>""")
