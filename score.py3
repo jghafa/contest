@@ -192,7 +192,7 @@ f.write ("""<table><caption>""")
 f.write (datetime.now().strftime('%m/%d&nbsp;%H:%M:%S'))
 f.write ("""    <br>Team Scores""")
 f.write ("""    </caption>
-              <tr><th align="left">Team</th><th>Score</th><th>#</th></tr>
+              <tr><th align="left">Team</th><th>Score</th><th>Pct</th></tr>
          """)
 
 for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,
@@ -203,7 +203,7 @@ for row in SQL.execute("""SELECT  team, sum(score) as TeamScore,
     failCount = len([y for y in FailList if y[0].upper()==row[0]])
     f.write('<tr><td>'                 +     row[0]  + 
             '</td><td align="center">' + str(row[1]) +
-            '</td><td align="center">' + str(row[2]) + '/' +str(row[2]+failCount)+ 
+            '</td><td align="center">' + '{:.1%}'.format(row[2]/(row[2]+failCount))+ 
             '</td></tr>')
 #end the team score summary
 f.write ("""</table>""")
