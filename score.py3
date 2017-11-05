@@ -269,7 +269,7 @@ for row in SQL.execute("""SELECT  problem, team, solved, score
     if row[0]+'-'+row[1].upper() in ele:
         elegantBonus = '*' 
     else:
-        elegantBonus = '' 
+        elegantBonus = '&nbsp;' 
     f.write('</td><td align="center">'+     row[0]  + elegantBonus +
             '</td><td>'               + str(row[1]) + 
             '</td><td align="left";style="white-space:nowrap;">'+ 
@@ -278,7 +278,9 @@ for row in SQL.execute("""SELECT  problem, team, solved, score
             '</td></tr>')
 #end of Problems solved sort by time
 f.write ("""</table>""")
-f.write ("""&nbsp;* Scored elegance bonus""")
+f.write ("""&nbsp;&nbsp;* Scored """+
+            str(Elegance)+
+         """x elegance bonus""")
 
 # Third div
 f.write ("""</div>""")
