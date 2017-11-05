@@ -4,6 +4,7 @@ score.py3 scores a programming contest.
 Features:
 Grades team submittals by comparing them to a reference answer, using the diff utility.
 Assigns points to an entry, based on matching the reference and the time stamp of the entry.
+Presence of a .ele indicates "elegance" and triggers a bonus multiplier.
 Stores the successful entries in an SQLite3 database.
 Writes results to an HTML file that auto refreshes.
 
@@ -29,23 +30,20 @@ answerFiles  = config['Paths']['AnswerFiles']
 HTML         = config['Paths']['HTMLOutput']
 css          = config['Paths']['cssOutput']
 Refresh      = config['HTML']['Refresh']
-
-# Get the list of Bonus Points per problem
-# convert the scores into a list of integers
-#points = [int(i) if i.isdigit() else i for i in config['Bonus']['Points'].split(',')]
-# put the problem numbers into a list
-#problems = config['Bonus']['Problems'].split(',')
-# put the problem names into a list
-#probname = config['Bonus']['ProbName'].split(',')
-# pair the problems, name and points into a tuple, 
-# use it later for initializing bonus db
-#BonusPoints = list(zip(problems, probname, points))
-
-# New way inputing Bonus Points
-BPList = config['Bonus']['BP']
+# Elegance bonus multipler
+Elegance     = config.getint('Bonus','Elegance',fallback=1)
+# Read in Bonus Points
+BPList       = config['Bonus']['BP']
 BonusPoints = [(x.split(',')[0].strip(),
                 x.split(',')[1].strip(),
                 int(x.split(',')[2])) for x in BPList.split(':')]
+
+# extract the problem numbers BonusPoint, to be used to test for valid problems
+problist = [pnum for pnum,pname,ppt in BonusPoints]
+
+# find the elegance files
+# the list entries will look like '01-JGH'
+ele = [x.split('/')[-1].split('.')[0].upper() for x in glob.glob(problemFiles+'*.[eE][lL][eE]')]
 
 # DefaultPoints is the list of possible problems, from 00 to 99.
 DefaultPoints = [("{:0>2d}".format(q), '', 1) for q in range(0,100)]
@@ -87,15 +85,13 @@ SQL.executemany('INSERT or IGNORE into bonus values (?,?,?)', DefaultPoints )
 #setup is complete
 SQLconn.commit()
 
-#print('BonusPoints=',BonusPoints)
-
 # Read in all the problems
 for files in glob.glob(problemFiles+'*.[tT][xX][tT]'):
     file = files.split('/')[-1]
     # Split filename at the dash, get the problem number
     problem, team = file.split('.')[0].split('-')
     # if the filename has no problem number, continue to next file
-    if not problem in [pnum for pnum,pname,ppt in BonusPoints]:
+    if not problem in problist:
         continue
 
     solved  = os.path.getmtime(problemFiles+file)
@@ -120,7 +116,7 @@ for files in glob.glob(problemFiles+'*.[tT][xX][tT]'):
                 (problem, team ))
         data = SQL.fetchone()
         if data is None:
-            #print (problem, team, solved)
+            # Insert the time the team solved a problem
             SQL.execute("INSERT into score values (?, upper(?), ?, 0)", 
                 (problem, team, solved))
         else:
@@ -157,15 +153,22 @@ for row in SQL.execute("""SELECT  score.problem, score.team, score.solved,
                           ORDER by score.problem, score.solved"""):
     prob = row[0]
     if last != prob:
+        # this is a new problem, set the bonus multiplier to 3
         bonus = 3
         last = prob
     else:
+        # problem has been solved, so drop value of multiplier
         if bonus > 1 :
             bonus -= 1
+    # look for an "elegance" file
+    if row[0]+'-'+row[1].upper() in ele:
+        elegant = Elegance
+    else:
+        elegant = 1
     # SQLite does not like two cursors active at one time.
     # So save the data in scorelist, and update when this loop ends
     # scorelist contains the bonus, the problem name, and the team name
-    scorelist.append((bonus*row[3],row[0],row[1]))
+    scorelist.append((elegant*bonus*row[3],row[0],row[1]))
 
 #update the scores with the bonuses saved in scorelist
 SQL.executemany("""UPDATE score 
@@ -263,7 +266,11 @@ f.write ("""<table><caption><br>Successful Submittals</caption>
 for row in SQL.execute("""SELECT  problem, team, solved, score
                           FROM score
                           ORDER by solved desc"""):
-    f.write('</td><td align="center">'+     row[0]  + 
+    if row[0]+'-'+row[1].upper() in ele:
+        elegantBonus = '*' 
+    else:
+        elegantBonus = '' 
+    f.write('</td><td align="center">'+     row[0]  + elegantBonus +
             '</td><td>'               + str(row[1]) + 
             '</td><td align="left";style="white-space:nowrap;">'+ 
              datetime.fromtimestamp(float(row[2])).strftime('%m-%d&nbsp;%H:%M:%S') +
@@ -271,6 +278,7 @@ for row in SQL.execute("""SELECT  problem, team, solved, score
             '</td></tr>')
 #end of Problems solved sort by time
 f.write ("""</table>""")
+f.write ("""&nbsp;* Scored elegance bonus""")
 
 # Third div
 f.write ("""</div>""")
