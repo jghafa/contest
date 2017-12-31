@@ -161,7 +161,7 @@ for row in SQL.execute("""SELECT  score.problem, score.team, score.solved,
         if bonus > 1 :
             bonus -= 1
     # look for an "elegance" file
-    if row[0]+'-'+row[1].upper() in ele:
+    if '00-'+row[1].upper() in ele or row[0]+'-'+row[1].upper() in ele:
         elegant = Elegance
     else:
         elegant = 1
@@ -266,7 +266,7 @@ f.write ("""<table><caption><br>Successful Submittals</caption>
 for row in SQL.execute("""SELECT  problem, team, solved, score
                           FROM score
                           ORDER by solved desc"""):
-    if row[0]+'-'+row[1].upper() in ele:
+    if '00-'+row[1].upper() in ele or row[0]+'-'+row[1].upper() in ele:
         elegantBonus = '*' 
     else:
         elegantBonus = '&nbsp;' 
@@ -280,7 +280,7 @@ for row in SQL.execute("""SELECT  problem, team, solved, score
 f.write ("""</table>""")
 f.write ("""&nbsp;&nbsp;* Scored """+
             str(Elegance)+
-         """x elegance bonus""")
+         """x technical bonus""")
 
 # Third div
 f.write ("""</div>""")
