@@ -43,21 +43,21 @@ Teams = set(x.split('/')[-1].split('.')[0].split('-')[1].upper() for x in glob.g
 
 def test(*args):
     ''' callback procedure for checkbox changes '''
-    print (args, chkbtn[args[0]], intvar_dict[chkbtn[args[0]]].get())
+    #print (args, chkbtn[args[0]], intvar_dict[chkbtn[args[0]]].get())
     team_name = chkbtn[args[0]]
     team_state = intvar_dict[chkbtn[args[0]]].get()
     
     if team_state:
-        print('enable')
+        #print('enable')
         files = open(problemFiles+'00-'+team_name+'.ELE','a')
         files.close()
     else:
-        print('disable')
+        #print('disable')
         os.remove(problemFiles+'00-'+team_name+'.ELE')
         
-    for key, value in intvar_dict.items():
-        if value.get():
-            print('selected:', key, value, value.get())
+    #for key, value in intvar_dict.items():
+    #    if value.get():
+    #        print('selected:', key, value, value.get())
 
 root = Tk()
 root.title('Score Settings')
