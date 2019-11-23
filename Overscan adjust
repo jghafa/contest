@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 xrandr --output DisplayPort-0 --set underscan on
 xrandr --output DisplayPort-0  --set "underscan hborder" 0 --set "underscan vborder" 0
 

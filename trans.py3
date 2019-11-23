@@ -53,6 +53,14 @@ problemFiles = config['Paths']['ProblemFiles']
 logOutput=config['Paths']['logOutput']
 # location of the score program file
 scoreProg=config['Paths']['scoreProg']
+# Read in Bonus Points
+BPList       = config['Bonus']['BP']
+BonusPoints = [(x.split(',')[0].strip(),
+                x.split(',')[1].strip(),
+                int(x.split(',')[2])) for x in BPList.split(':')]
+
+# extract the problem numbers BonusPoint, to be used to test for valid problems
+problist = [pnum for pnum,pname,ppt in BonusPoints]
 
 log = open(logOutput, 'a')
 
@@ -76,9 +84,22 @@ for a in range(2, len(sys.argv)):
         f = fname.split('-')
         # if the filename has no problem number, continue to next file
         if len(f) < 2:
+            tkinter.messagebox.showwarning("Filename Missing Dash", 
+                    "Use 00-Team.txt\nNot "+fname)
+            continue
+        if len(f) > 2:
+            tkinter.messagebox.showwarning("Extra Dash in Filename", 
+                    "Use 00-Team.txt\nNot "+fname)
             continue
         problem = f[0]
         team    = f[1].split('.')[0]
+
+        # if the filename has no problem number, continue to next file
+        if not problem in problist:
+            tkinter.messagebox.showwarning("Problem Not Found", 
+                    "Fix File Name\n"+fname)
+            continue
+
         # Did this team already solve the problem?
         SQL.execute("""SELECT solved 
                        FROM score 
