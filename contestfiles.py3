@@ -60,3 +60,5 @@ if tkinter.messagebox.askokcancel("Copy Files?", 'Copy files to\n' + targetdir +
         shutil.copy(file, targetdir + path)
     for file in glob.glob(InputFiles + 'Input*.[tT][xX][tT]'):
         shutil.copy(file, targetdir + path)
+    for file in glob.glob(InputFiles + 'word*.[tT][xX][tT]'):
+        shutil.copy(file, targetdir + path)
